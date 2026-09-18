@@ -1,13 +1,25 @@
-// gcc scramble.c -o scramble
+// gcc scramble.c ./lib/linenoise.c -o scramble
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "./lib/linenoise.h"
 
-int main(int argc, char **argv)
-{
+#define PROMPT "$ "
+#define HISTORY_LENGTH 1024
 
-    printf("Hello world");
+int main(void)
+{
+    if (!linenoiseHistorySetMaxLen(HISTORY_LENGTH)) {
+        fprintf(stderr, "Could not set linenoise history");
+        exit(1);
+    }
+
+    char *line;
+    while((line = linenoise(PROMPT)) != NULL) {
+        fprintf(stdout, "%s\n", line);
+        linenoiseHistoryAdd(line);
+        linenoiseFree(line);
+    }
 
     return 0;
 }
