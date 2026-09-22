@@ -36,6 +36,7 @@ int s_execute(char *cmd, char **cmd_args)
     pid_t pid;
 
     pid = fork();
+
     if (pid < 0)
     {
         fprintf(stderr, "Could not execute\n");
@@ -44,8 +45,11 @@ int s_execute(char *cmd, char **cmd_args)
 
     if(pid == 0)
     {
-        execv(cmd, cmd_args);
-    } else
+        execvp(cmd, cmd_args);
+        perror("execvp");
+        exit(EXIT_FAILURE);
+    }
+    else
     {
         if (waitpid (pid, &status, 0) != pid)
         {
@@ -53,6 +57,7 @@ int s_execute(char *cmd, char **cmd_args)
             return -1;
         }
     }
+    return 0;
 }
 
 int main(void)
