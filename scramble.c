@@ -19,7 +19,7 @@ int s_read(char *input, char **args, int max_args)
     char *token = strtok(input, " \t");
 
     // keep extracting til there are no more or args is full
-    while (token != NULL && i < (MAX_ARGS - 1))
+    while (token != NULL && i < (max_args - 1))
     {
         args[i++] = token;
         token = strtok(NULL, " \t");
