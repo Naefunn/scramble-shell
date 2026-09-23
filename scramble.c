@@ -10,6 +10,11 @@
 #define PROMPT "$ "
 #define HISTORY_LENGTH 1024
 #define MAX_ARGS 1024
+#define PATH_MAX 4096
+
+char CWD[PATH_MAX];
+
+
 
 int s_read(char *input, char **args, int max_args)
 {
@@ -60,8 +65,67 @@ int s_execute(char *cmd, char **cmd_args)
     return 0;
 }
 
+typedef enum Builtin 
+{
+    CD,
+    PWD,
+    //PUSHD,
+    //POPD,
+    //DEBUG,
+    INVALID
+} Builtin;
+
+void builtin_impl_cd(char **args, size_t n_args);
+void builtin_impl_pwd(char **args, size_t n_args);
+
+void (*BUILTIN_TABLE[]) (char** args, size_t n_args) = {
+    [CD] = builtin_impl_cd,
+    [PWD] = builtin_impl_pwd,
+};
+
+Builtin builtin_code(char *cmd)
+{
+    if(strcmp(cmd, "cd") == 0){
+        return CD;
+    } else if (strcmp(cmd, "pwd") == 0) {
+        return PWD;
+    } else {
+        return INVALID;
+    }
+}
+
+int is_builtin(char *cmd)
+{
+    return builtin_code(cmd) != INVALID;
+}
+
+void s_execute_builtin(char *cmd, char **args, size_t n_args)
+{
+    BUILTIN_TABLE[builtin_code(cmd)](args, n_args);
+}
+
+void builtin_impl_cd(char **args, size_t n_args)
+{
+
+}
+
+void builtin_impl_pwd(char **args, size_t n_args) 
+{
+    fprintf(stdout, "%s\n", CWD);
+}
+
+void refresh_cwd(void)
+{
+    if(getcwd(CWD, sizeof(CWD)) == NULL){
+        fprintf(stderr, "Error: could not read working directory");
+        exit(1);
+    }
+}
+
+
 int main(void)
 {
+    refresh_cwd();
     // REPL input
     if (!linenoiseHistorySetMaxLen(HISTORY_LENGTH)) 
     {
@@ -91,10 +155,16 @@ int main(void)
             continue;
         }
 
-        // TODO eval and print step
         char *cmd = args[0];
         char **cmd_args = args;
-        s_execute(cmd, cmd_args);
+
+        if(is_builtin(cmd))
+        {
+            s_execute_builtin(cmd, (cmd_args+1), args_read-1);
+        } else {
+            s_execute(cmd, cmd_args);
+        }
+            
 
         linenoiseHistoryAdd(line);
         linenoiseFree(line);
