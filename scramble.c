@@ -77,6 +77,7 @@ typedef enum Builtin
 
 void builtin_impl_cd(char **args, size_t n_args);
 void builtin_impl_pwd(char **args, size_t n_args);
+void refresh_cwd(void);
 
 void (*BUILTIN_TABLE[]) (char** args, size_t n_args) = {
     [CD] = builtin_impl_cd,
@@ -106,7 +107,32 @@ void s_execute_builtin(char *cmd, char **args, size_t n_args)
 
 void builtin_impl_cd(char **args, size_t n_args)
 {
+    // If no directory is provided, go to the user's home directory
+    if (n_args == 0)
+    {
+        args[0] = getenv("HOME");
 
+        if (args[0] == NULL)
+        {
+            fprintf(stderr, "cd: HOME not set\n");
+            return;
+        }
+    }
+    else if (n_args > 1)
+    {
+        fprintf(stderr, "cd: too many arguments\n");
+        return;
+    }
+
+    // Change the shell's working directory
+    if (chdir(args[0]) != 0)
+    {
+        perror("cd");
+        return;
+    }
+
+    // Update the shell's stored working directory
+    refresh_cwd();
 }
 
 void builtin_impl_pwd(char **args, size_t n_args) 
