@@ -1,4 +1,5 @@
-// gcc scramble.c ./lib/linenoise.c -o scramble
+
+/* gcc scramble.c ./lib/linenoise.c -o scramble */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -135,16 +136,20 @@ void builtin_impl_cd(char **args, size_t n_args)
     refresh_cwd();
 }
 
-void builtin_impl_pwd(char **args, size_t n_args) 
+void builtin_impl_pwd(char **args, size_t n_args)
 {
+    (void)args;
+    (void)n_args;
+
     fprintf(stdout, "%s\n", CWD);
 }
 
 void refresh_cwd(void)
 {
-    if(getcwd(CWD, sizeof(CWD)) == NULL){
-        fprintf(stderr, "Error: could not read working directory");
-        exit(1);
+    if (getcwd(CWD, sizeof(CWD)) == NULL)
+    {
+        perror("getcwd");
+        CWD[0] = '\0';
     }
 }
 
